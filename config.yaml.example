@@ -1,0 +1,16 @@
+# config.yaml.example
+server:
+  host: "localhost"
+  port: 8080
+
+rate_limits:
+  - domain: "api.github.com"
+    requests_per_second: 10
+  - domain: "api.twitter.com" 
+    requests_per_second: 5
+  - domain: "*.example.com"
+    requests_per_second: 20
+
+# Optional: Default rate limit for unspecified domains
+default_rate_limit:
+  requests_per_second: 1
