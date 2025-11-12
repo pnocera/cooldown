@@ -1,7 +1,13 @@
 package ratelimit
 
 import (
+	"net/http"
+	"strconv"
+	"sync"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCerebrasRateLimiter_Creation(t *testing.T) {
@@ -72,4 +78,58 @@ func TestCerebrasRateLimiter_QueueIntegration(t *testing.T) {
 	if limiter.QueueLength() != 1 {
 		t.Errorf("Expected queue length 1, got %d", limiter.QueueLength())
 	}
+}
+
+func TestCerebrasLimiterHeaderBasedState(t *testing.T) {
+	limiter := NewCerebrasLimiter(60, 1000)
+
+	// Test initial state
+	assert.Equal(t, 0, limiter.currentTPMLimit)
+	assert.Equal(t, 0, limiter.currentTPMRemaining)
+	assert.True(t, limiter.lastHeaderUpdate.IsZero())
+
+	// Update from headers
+	headers := http.Header{}
+	headers.Set("x-ratelimit-limit-tokens-minute", "1000")
+	headers.Set("x-ratelimit-remaining-tokens-minute", "800")
+	headers.Set("x-ratelimit-reset-tokens-minute", "45.5")
+
+	err := limiter.UpdateFromHeaders(headers)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1000, limiter.currentTPMLimit)
+	assert.Equal(t, 800, limiter.currentTPMRemaining)
+	assert.False(t, limiter.lastHeaderUpdate.IsZero())
+	assert.True(t, time.Now().Add(45*time.Second).Before(limiter.nextTPMReset))
+	assert.True(t, time.Now().Add(46*time.Second).After(limiter.nextTPMReset))
+}
+
+func TestCerebrasLimiterConcurrentHeaderUpdates(t *testing.T) {
+	limiter := NewCerebrasLimiter(60, 1000)
+
+	var wg sync.WaitGroup
+	numGoroutines := 10
+
+	for i := 0; i < numGoroutines; i++ {
+		wg.Add(1)
+		go func(iteration int) {
+			defer wg.Done()
+
+			headers := http.Header{}
+			headers.Set("x-ratelimit-limit-tokens-minute", strconv.Itoa(1000+iteration))
+			headers.Set("x-ratelimit-remaining-tokens-minute", "800")
+			headers.Set("x-ratelimit-reset-tokens-minute", "45.5")
+
+			_ = limiter.UpdateFromHeaders(headers)
+		}(i)
+	}
+
+	wg.Wait()
+
+	limiter.mu.RLock()
+	defer limiter.mu.RUnlock()
+
+	// Should have updated to some valid value
+	assert.True(t, limiter.currentTPMLimit > 0)
+	assert.False(t, limiter.lastHeaderUpdate.IsZero())
 }

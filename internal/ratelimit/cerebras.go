@@ -2,6 +2,7 @@ package ratelimit
 
 import (
 	"container/list"
+	"net/http"
 	"sync"
 	"time"
 
@@ -19,12 +20,19 @@ type windowElement struct {
 }
 
 type CerebrasLimiter struct {
+	// Existing fields
 	rpmLimit  int
 	tpmLimit  int
 	rpmWindow *slidingWindow
 	tpmWindow *slidingWindow
 	queue     *queue.PriorityQueue
 	mu        sync.RWMutex
+
+	// New header-based fields
+	currentTPMLimit   int
+	currentTPMRemaining int
+	nextTPMReset      time.Time
+	lastHeaderUpdate  time.Time
 }
 
 func NewCerebrasLimiter(rpmLimit, tpmLimit int) *CerebrasLimiter {
@@ -178,4 +186,25 @@ func (c *CerebrasLimiter) calculatePriority(tokens int, rpmUsage, tpmUsage float
 
 func (c *CerebrasLimiter) QueueLength() int {
 	return c.queue.Len()
+}
+
+func (c *CerebrasLimiter) UpdateFromHeaders(headers http.Header) error {
+	parsed, err := ParseRateLimitHeaders(headers)
+	if err != nil {
+		// Fall back to configured limits
+		return err
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	// Update limits with header values
+	if parsed.TPMLimit > 0 {
+		c.currentTPMLimit = parsed.TPMLimit
+	}
+	c.currentTPMRemaining = parsed.TPMRemaining
+	c.nextTPMReset = time.Now().Add(parsed.TPMReset)
+	c.lastHeaderUpdate = time.Now()
+
+	return nil
 }
