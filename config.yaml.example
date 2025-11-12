@@ -6,7 +6,7 @@ server:
 rate_limits:
   - domain: "api.github.com"
     requests_per_second: 10
-  - domain: "api.twitter.com" 
+  - domain: "api.twitter.com"
     requests_per_second: 5
   - domain: "*.example.com"
     requests_per_second: 20
@@ -14,3 +14,27 @@ rate_limits:
 # Optional: Default rate limit for unspecified domains
 default_rate_limit:
   requests_per_second: 1
+
+# Cerebras AI specific rate limiting configuration
+cerebras_limits:
+  rpm_limit: 1000              # Requests per minute limit
+  tpm_limit: 1000000           # Tokens per minute limit
+  max_queue_depth: 100         # Maximum number of queued requests
+  request_timeout: 10m         # Maximum time a request can wait in queue
+  priority_threshold: 0.7      # Usage threshold for priority adjustment (70%)
+
+# Example: Cerebras configuration for production use
+# cerebras_limits:
+#   rpm_limit: 5000            # Higher limit for production
+#   tpm_limit: 5000000         # 5M tokens per minute
+#   max_queue_depth: 500       # Larger queue for high traffic
+#   request_timeout: 5m        # Shorter timeout for better UX
+#   priority_threshold: 0.6    # Lower threshold for more aggressive prioritization
+
+# Example: Cerebras configuration for development/testing
+# cerebras_limits:
+#   rpm_limit: 60              # 1 request per second
+#   tpm_limit: 100000          # 100K tokens per minute
+#   max_queue_depth: 20        # Small queue for testing
+#   request_timeout: 30s       # Short timeout for quick feedback
+#   priority_threshold: 0.8    # Higher threshold for testing behavior

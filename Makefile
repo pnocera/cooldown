@@ -1,4 +1,4 @@
-.PHONY: help build build-all build-windows build-linux build-darwin test fmt vet check dev quick-start version clean
+.PHONY: help build build-all build-windows build-linux build-darwin build-loadtest test fmt vet check dev quick-start version clean
 
 # Detect OS and set appropriate binary extension
 ifeq ($(OS),Windows_NT)
@@ -8,6 +8,7 @@ else
 endif
 
 BINARY_NAME=cooldown-proxy$(BINARY_EXT)
+LOADTEST_BINARY=loadtest$(BINARY_EXT)
 
 help:
 	@echo "Cooldown Proxy - Available Commands:"
@@ -16,12 +17,14 @@ help:
 	@echo "  build-windows  - Build for Windows"
 	@echo "  build-linux    - Build for Linux"
 	@echo "  build-darwin   - Build for macOS"
+	@echo "  build-loadtest - Build load testing tool"
 	@echo "  test           - Run tests"
 	@echo "  fmt            - Format code"
 	@echo "  vet            - Run go vet"
 	@echo "  check          - Run all quality checks"
 	@echo "  dev            - Start development server"
 	@echo "  quick-start    - Quick start for development"
+	@echo "  loadtest       - Run load tests (requires running server)"
 	@echo "  version        - Show version info"
 	@echo "  clean          - Clean build artifacts"
 
@@ -29,6 +32,11 @@ build:
 	@echo "Building cooldown-proxy for $(shell go env GOOS)..."
 	go build -o $(BINARY_NAME) ./cmd/proxy
 	@echo "Built $(BINARY_NAME)"
+
+build-loadtest:
+	@echo "Building loadtest tool for $(shell go env GOOS)..."
+	go build -o $(LOADTEST_BINARY) ./cmd/loadtest
+	@echo "Built $(LOADTEST_BINARY)"
 
 build-windows:
 	@echo "Building for Windows..."
@@ -65,10 +73,18 @@ vet:
 
 check: fmt vet test
 
+loadtest:
+	@echo "Running light load test against localhost:8080..."
+	@if [ ! -f $(LOADTEST_BINARY) ]; then $(MAKE) build-loadtest; fi
+	./$(LOADTEST_BINARY) -scenario light_load -output loadtest-results.json
+
 clean:
 	@echo "Cleaning build artifacts..."
 	rm -f cooldown-proxy*
 	rm -f cooldown-proxy*.exe
+	rm -f loadtest*
+	rm -f loadtest*.exe
+	rm -f *.json
 	@echo "Cleaned build artifacts"
 
 dev:

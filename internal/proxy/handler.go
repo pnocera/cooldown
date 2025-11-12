@@ -1,11 +1,11 @@
 package proxy
 
 import (
+	"github.com/cooldownp/cooldown-proxy/internal/ratelimit"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"time"
-	"github.com/cooldownp/cooldown-proxy/internal/ratelimit"
 )
 
 type Handler struct {
@@ -33,7 +33,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(delay)
 		}
 	}
-	
+
 	h.reverseProxy.ServeHTTP(w, r)
 }
 

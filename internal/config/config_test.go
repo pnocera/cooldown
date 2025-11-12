@@ -10,13 +10,13 @@ func TestLoadConfig(t *testing.T) {
 	// Create temporary config file
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "config.yaml")
-	
+
 	configContent := `
 server:
   host: "0.0.0.0"
   port: 9090
 `
-	
+
 	err := os.WriteFile(configPath, []byte(configContent), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create temp config: %v", err)

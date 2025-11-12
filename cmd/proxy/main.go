@@ -9,12 +9,15 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
-	
+
 	"github.com/cooldownp/cooldown-proxy/internal/config"
+	"github.com/cooldownp/cooldown-proxy/internal/proxy"
 	"github.com/cooldownp/cooldown-proxy/internal/ratelimit"
 	"github.com/cooldownp/cooldown-proxy/internal/router"
+	"github.com/cooldownp/cooldown-proxy/internal/token"
 )
 
 var (
@@ -39,16 +42,37 @@ func main() {
 		// This will need to be implemented in the rate limiter
 	}
 
+	// Initialize Cerebras components if configured (check if RPM limit is set)
+	var cerebrasHandler *proxy.CerebrasProxyHandler
+	if cfg.CerebrasLimits.RPMLimit > 0 {
+		log.Printf("Initializing Cerebras rate limiting with RPM: %d, TPM: %d",
+			cfg.CerebrasLimits.RPMLimit, cfg.CerebrasLimits.TPMLimit)
+
+		// Initialize Cerebras-specific components
+		cerebrasLimiter := ratelimit.NewCerebrasLimiter(cfg.CerebrasLimits.RPMLimit, cfg.CerebrasLimits.TPMLimit)
+		tokenEstimator := token.NewTokenEstimator()
+		cerebrasHandler = proxy.NewCerebrasProxyHandler(cerebrasLimiter, tokenEstimator, &cfg.CerebrasLimits)
+
+		log.Printf("Cerebras handler initialized with queue depth: %d, timeout: %v",
+			cfg.CerebrasLimits.MaxQueueDepth, cfg.CerebrasLimits.RequestTimeout)
+	}
+
 	// Initialize router
 	routes := make(map[string]*url.URL)
 	// TODO: Load routes from configuration or use direct passthrough
-	
+
 	r := router.New(routes, rateLimiter)
+
+	// Create composite handler that routes to Cerebras handler when appropriate
+	compositeHandler := &CompositeHandler{
+		cerebrasHandler: cerebrasHandler,
+		standardRouter:  r,
+	}
 
 	// Create HTTP server
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),
-		Handler: r,
+		Handler: compositeHandler,
 	}
 
 	// Start server in goroutine
@@ -75,4 +99,43 @@ func main() {
 	}
 
 	log.Println("Server exited")
+}
+
+// CompositeHandler routes requests between Cerebras handler and standard router
+type CompositeHandler struct {
+	cerebrasHandler *proxy.CerebrasProxyHandler
+	standardRouter  http.Handler
+}
+
+func (ch *CompositeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Route Cerebras requests to the special handler if configured
+	if ch.cerebrasHandler != nil && ch.isCerebrasRequest(r) {
+		ch.cerebrasHandler.ServeHTTP(w, r)
+		return
+	}
+
+	// Route all other requests to the standard router
+	ch.standardRouter.ServeHTTP(w, r)
+}
+
+func (ch *CompositeHandler) isCerebrasRequest(req *http.Request) bool {
+	host := req.Host
+	// Remove port if present
+	if colonIndex := strings.Index(host, ":"); colonIndex != -1 {
+		host = host[:colonIndex]
+	}
+
+	// Check against known Cerebras hosts
+	cerebrasHosts := []string{
+		"api.cerebras.ai",
+		"inference.cerebras.ai",
+	}
+
+	for _, cerebrasHost := range cerebrasHosts {
+		if host == cerebrasHost {
+			return true
+		}
+	}
+
+	return false
 }

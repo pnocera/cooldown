@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"gopkg.in/yaml.v3"
+	"os"
 )
 
 func Load(configPath string) (*Config, error) {
@@ -25,6 +25,9 @@ func Load(configPath string) (*Config, error) {
 	if config.Server.Port == 0 {
 		config.Server.Port = 8080
 	}
+
+	// Set CerebrasLimits defaults
+	config.CerebrasLimits.SetDefaults()
 
 	return &config, nil
 }

@@ -1,20 +1,20 @@
 package ratelimit
 
 import (
+	"github.com/cooldownp/cooldown-proxy/internal/config"
+	"go.uber.org/ratelimit"
 	"strings"
 	"time"
-	"go.uber.org/ratelimit"
-	"github.com/cooldownp/cooldown-proxy/internal/config"
 )
 
 type Limiter struct {
-	limiters map[string]ratelimit.Limiter
+	limiters       map[string]ratelimit.Limiter
 	defaultLimiter ratelimit.Limiter
 }
 
 func New(rules []config.RateLimitRule) *Limiter {
 	limiters := make(map[string]ratelimit.Limiter)
-	
+
 	for _, rule := range rules {
 		rate := int(rule.RequestsPerSecond)
 		if rate <= 0 {
@@ -22,9 +22,9 @@ func New(rules []config.RateLimitRule) *Limiter {
 		}
 		limiters[rule.Domain] = ratelimit.New(rate)
 	}
-	
+
 	return &Limiter{
-		limiters: limiters,
+		limiters:       limiters,
 		defaultLimiter: ratelimit.New(1), // 1 req/sec default
 	}
 }
@@ -35,7 +35,7 @@ func (l *Limiter) GetDelay(domain string) time.Duration {
 	if limiter == nil {
 		limiter = l.defaultLimiter
 	}
-	
+
 	// Take from rate limiter
 	limiter.Take()
 	return 0
@@ -46,7 +46,7 @@ func (l *Limiter) findLimiter(domain string) ratelimit.Limiter {
 	if limiter, exists := l.limiters[domain]; exists {
 		return limiter
 	}
-	
+
 	// Wildcard matching
 	for pattern, limiter := range l.limiters {
 		if strings.HasPrefix(pattern, "*.") {
@@ -56,6 +56,6 @@ func (l *Limiter) findLimiter(domain string) ratelimit.Limiter {
 			}
 		}
 	}
-	
+
 	return nil
 }

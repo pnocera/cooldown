@@ -6,7 +6,7 @@
 *.dylib
 cooldown-proxy
 cooldown-proxy-*
-
+.env
 # Test binary, built with `go test -c`
 *.test
 

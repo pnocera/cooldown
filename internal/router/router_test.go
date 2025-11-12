@@ -20,14 +20,14 @@ func TestRouter(t *testing.T) {
 	}
 
 	router := New(routes, nil)
-	
+
 	req := httptest.NewRequest("GET", "http://api.github.com/users/test", nil)
 	w := httptest.NewRecorder()
-	
+
 	router.ServeHTTP(w, req)
 
 	resp := w.Result()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
 	}
@@ -36,14 +36,14 @@ func TestRouter(t *testing.T) {
 func TestRouterNotFound(t *testing.T) {
 	routes := map[string]*url.URL{}
 	router := New(routes, nil)
-	
+
 	req := httptest.NewRequest("GET", "http://unknown.host/test", nil)
 	w := httptest.NewRecorder()
-	
+
 	router.ServeHTTP(w, req)
 
 	resp := w.Result()
-	
+
 	if resp.StatusCode != http.StatusNotFound {
 		t.Errorf("Expected status 404, got %d", resp.StatusCode)
 	}
@@ -61,15 +61,15 @@ func TestRouterDirectPassthrough(t *testing.T) {
 		"test-server": mustParse(targetServer.URL),
 	}
 	router := New(routes, nil)
-	
+
 	// Create request that should route to target
 	req := httptest.NewRequest("GET", "http://test-server/test", nil)
 	w := httptest.NewRecorder()
-	
+
 	router.ServeHTTP(w, req)
 
 	resp := w.Result()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
 	}
