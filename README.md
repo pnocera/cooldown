@@ -1,5 +1,9 @@
 # Cooldown Proxy
 
+<div align="center">
+  <img src="assets/cooldowsteamcr.png" alt="Cooldown Proxy Banner" width="600">
+</div>
+
 A local-first reverse proxy with intelligent rate limiting for outgoing REST API requests using the leaky bucket algorithm.
 
 ## Features
