@@ -1,11 +1,7 @@
 .PHONY: help build build-all build-windows build-linux build-darwin build-loadtest test fmt vet check dev quick-start version clean
 
-# Detect OS and set appropriate binary extension
-ifeq ($(OS),Windows_NT)
-	BINARY_EXT=.exe
-else
-	BINARY_EXT=
-endif
+# Detect OS and set appropriate binary extension using Go's environment
+BINARY_EXT=$(shell go env GOOS | grep -q "windows" && echo ".exe" || echo "")
 
 BINARY_NAME=cooldown-proxy$(BINARY_EXT)
 LOADTEST_BINARY=loadtest$(BINARY_EXT)
