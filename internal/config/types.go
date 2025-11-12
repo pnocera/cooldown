@@ -19,12 +19,20 @@ type RateLimitRule struct {
 	RequestsPerSecond int    `yaml:"requests_per_second"`
 }
 
+type CerebrasRateLimitConfig struct {
+	UseHeaders     bool          `yaml:"use_headers"`
+	HeaderFallback bool          `yaml:"header_fallback"`
+	HeaderTimeout  time.Duration `yaml:"header_timeout"`
+	ResetBuffer    time.Duration `yaml:"reset_buffer"`
+}
+
 type CerebrasLimits struct {
-	RPMLimit          int           `yaml:"rpm_limit"`
-	TPMLimit          int           `yaml:"tpm_limit"`
-	MaxQueueDepth     int           `yaml:"max_queue_depth"`
-	RequestTimeout    time.Duration `yaml:"request_timeout"`
-	PriorityThreshold float64       `yaml:"priority_threshold"`
+	RateLimits       CerebrasRateLimitConfig `yaml:"rate_limits"`
+	RPMLimit         int                      `yaml:"rpm_limit"`
+	TPMLimit         int                      `yaml:"tpm_limit"`
+	MaxQueueDepth    int                      `yaml:"max_queue_depth"`
+	RequestTimeout   time.Duration            `yaml:"request_timeout"`
+	PriorityThreshold float64                 `yaml:"priority_threshold"`
 }
 
 // Set default values for CerebrasLimits
@@ -43,5 +51,16 @@ func (c *CerebrasLimits) SetDefaults() {
 	}
 	if c.PriorityThreshold == 0 {
 		c.PriorityThreshold = 0.7
+	}
+
+	// Set defaults for rate limit config
+	// Note: UseHeaders defaults to false (disabled by default)
+	// Note: HeaderFallback defaults to true (enabled by default)
+	c.RateLimits.HeaderFallback = true
+	if c.RateLimits.HeaderTimeout == 0 {
+		c.RateLimits.HeaderTimeout = 5 * time.Second
+	}
+	if c.RateLimits.ResetBuffer == 0 {
+		c.RateLimits.ResetBuffer = 100 * time.Millisecond
 	}
 }

@@ -17,6 +17,11 @@ default_rate_limit:
 
 # Cerebras AI specific rate limiting configuration
 cerebras_limits:
+  rate_limits:
+    use_headers: true           # Enable header-based rate limiting
+    header_fallback: true       # Fall back to static limits if headers fail
+    header_timeout: 5s          # Max time to wait for fresh header data
+    reset_buffer: 100ms         # Buffer time before reset to account for clock skew
   rpm_limit: 1000              # Requests per minute limit
   tpm_limit: 1000000           # Tokens per minute limit
   max_queue_depth: 100         # Maximum number of queued requests
