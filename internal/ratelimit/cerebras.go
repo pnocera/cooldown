@@ -208,3 +208,45 @@ func (c *CerebrasLimiter) UpdateFromHeaders(headers http.Header) error {
 
 	return nil
 }
+
+func (c *CerebrasLimiter) CheckRequestWithDynamicQueue(requestID string, tokens int) time.Duration {
+	// First check if we have recent header data
+	c.mu.RLock()
+	hasRecentHeaders := !c.lastHeaderUpdate.IsZero() && time.Now().Sub(c.lastHeaderUpdate) <= 5*time.Minute
+	c.mu.RUnlock()
+
+	if !hasRecentHeaders {
+		// Fall back to static limiting logic
+		return c.CheckRequestWithQueue(requestID, tokens)
+	}
+
+	// Use header-based logic
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	now := time.Now()
+
+	if c.currentTPMRemaining <= 0 {
+		// Calculate precise wait time until reset
+		if now.Before(c.nextTPMReset) {
+			return c.nextTPMReset.Sub(now)
+		}
+		// Reset should have occurred, assume some capacity
+		c.currentTPMRemaining = c.currentTPMLimit / 10 // Conservative estimate
+	}
+
+	if tokens > c.currentTPMRemaining {
+		// Not enough tokens, wait for reset
+		if now.Before(c.nextTPMReset) {
+			return c.nextTPMReset.Sub(now)
+		}
+	}
+
+	// Update remaining tokens
+	c.currentTPMRemaining -= tokens
+
+	// Record in sliding window for consistency
+	c.recordRequest(tokens, now)
+
+	return 0 // Process immediately
+}
