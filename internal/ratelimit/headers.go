@@ -8,12 +8,12 @@ import (
 )
 
 type RateLimitHeaders struct {
-	TPMLimit             int
-	TPMRemaining         int
-	TPMReset             time.Duration
-	RequestDayLimit      int
-	RequestDayRemaining  int
-	RequestDayReset      time.Duration
+	TPMLimit            int
+	TPMRemaining        int
+	TPMReset            time.Duration
+	RequestDayLimit     int
+	RequestDayRemaining int
+	RequestDayReset     time.Duration
 }
 
 func ParseRateLimitHeaders(headers http.Header) (*RateLimitHeaders, error) {

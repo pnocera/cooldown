@@ -29,10 +29,10 @@ type CerebrasLimiter struct {
 	mu        sync.RWMutex
 
 	// New header-based fields
-	currentTPMLimit   int
+	currentTPMLimit     int
 	currentTPMRemaining int
-	nextTPMReset      time.Time
-	lastHeaderUpdate  time.Time
+	nextTPMReset        time.Time
+	lastHeaderUpdate    time.Time
 }
 
 func NewCerebrasLimiter(rpmLimit, tpmLimit int) *CerebrasLimiter {

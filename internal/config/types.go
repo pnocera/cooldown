@@ -27,11 +27,11 @@ type CerebrasRateLimitConfig struct {
 }
 
 type CerebrasLimits struct {
-	RateLimits       CerebrasRateLimitConfig `yaml:"rate_limits"`
-	RPMLimit         int                      `yaml:"rpm_limit"`
-	TPMLimit         int                      `yaml:"tpm_limit"`
-	MaxQueueDepth    int                      `yaml:"max_queue_depth"`
-	RequestTimeout   time.Duration            `yaml:"request_timeout"`
+	RateLimits        CerebrasRateLimitConfig `yaml:"rate_limits"`
+	RPMLimit          int                     `yaml:"rpm_limit"`
+	TPMLimit          int                     `yaml:"tpm_limit"`
+	MaxQueueDepth     int                     `yaml:"max_queue_depth"`
+	RequestTimeout    time.Duration           `yaml:"request_timeout"`
 	PriorityThreshold float64                 `yaml:"priority_threshold"`
 }
 

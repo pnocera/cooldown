@@ -75,8 +75,8 @@ cerebras_limits:
 	config.CerebrasLimits.SetDefaults()
 
 	// Should have sensible defaults
-	assert.False(t, config.CerebrasLimits.RateLimits.UseHeaders)     // Disabled by default
-	assert.True(t, config.CerebrasLimits.RateLimits.HeaderFallback)  // Enabled by default (zero value = false, but we want true)
+	assert.False(t, config.CerebrasLimits.RateLimits.UseHeaders)    // Disabled by default
+	assert.True(t, config.CerebrasLimits.RateLimits.HeaderFallback) // Enabled by default (zero value = false, but we want true)
 	assert.Equal(t, 5*time.Second, config.CerebrasLimits.RateLimits.HeaderTimeout)
 	assert.Equal(t, 100*time.Millisecond, config.CerebrasLimits.RateLimits.ResetBuffer)
 }

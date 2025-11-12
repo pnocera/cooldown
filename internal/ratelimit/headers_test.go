@@ -33,10 +33,10 @@ func TestParseRateLimitHeadersMissingRequired(t *testing.T) {
 
 func TestParseRateLimitHeadersInvalidValues(t *testing.T) {
 	tests := []struct {
-		name            string
-		setupHeaders    func() http.Header
-		expected        *RateLimitHeaders
-		hasError        bool
+		name         string
+		setupHeaders func() http.Header
+		expected     *RateLimitHeaders
+		hasError     bool
 	}{
 		{
 			name: "invalid tpm limit",
