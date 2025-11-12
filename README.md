@@ -179,13 +179,31 @@ go tool cover -html=coverage.out
 ### Building
 
 ```bash
+# Build for current platform (includes .exe on Windows)
+make build
+
+# Build for all platforms
+make build-all
+
+# Build for specific platforms
+make build-windows    # Creates cooldown-proxy-windows-amd64.exe
+make build-linux      # Creates cooldown-proxy-linux-amd64
+make build-darwin     # Creates cooldown-proxy-darwin-amd64
+
+# Clean build artifacts
+make clean
+```
+
+### Manual Build Commands
+
+```bash
 # Build for current platform
 go build -o cooldown-proxy ./cmd/proxy
 
-# Build for multiple platforms
-GOOS=linux GOARCH=amd64 go build -o cooldown-proxy-linux ./cmd/proxy
-GOOS=darwin GOARCH=amd64 go build -o cooldown-proxy-macos ./cmd/proxy
-GOOS=windows GOARCH=amd64 go build -o cooldown-proxy.exe ./cmd/proxy
+# Build for specific platforms
+GOOS=windows GOARCH=amd64 go build -o cooldown-proxy-windows-amd64.exe ./cmd/proxy
+GOOS=linux GOARCH=amd64 go build -o cooldown-proxy-linux-amd64 ./cmd/proxy
+GOOS=darwin GOARCH=amd64 go build -o cooldown-proxy-darwin-amd64 ./cmd/proxy
 ```
 
 ## Architecture
