@@ -188,6 +188,31 @@ func (c *CerebrasLimiter) QueueLength() int {
 	return c.queue.Len()
 }
 
+// Public getter methods for testing and monitoring
+func (c *CerebrasLimiter) CurrentTPMLimit() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.currentTPMLimit
+}
+
+func (c *CerebrasLimiter) CurrentTPMRemaining() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.currentTPMRemaining
+}
+
+func (c *CerebrasLimiter) LastHeaderUpdate() time.Time {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.lastHeaderUpdate
+}
+
+func (c *CerebrasLimiter) NextTPMReset() time.Time {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.nextTPMReset
+}
+
 func (c *CerebrasLimiter) UpdateFromHeaders(headers http.Header) error {
 	parsed, err := ParseRateLimitHeaders(headers)
 	if err != nil {

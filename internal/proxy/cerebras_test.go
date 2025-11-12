@@ -3,7 +3,10 @@ package proxy
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 	"github.com/cooldownp/cooldown-proxy/internal/config"
 	"github.com/cooldownp/cooldown-proxy/internal/ratelimit"
 	"github.com/cooldownp/cooldown-proxy/internal/token"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCerebrasProxyHandler_Creation(t *testing.T) {
@@ -169,4 +173,98 @@ func TestCerebrasProxyHandler_CircuitBreakerIntegration(t *testing.T) {
 	if stats.Name != "cerebras-api" {
 		t.Errorf("Expected circuit breaker name 'cerebras-api', got %s", stats.Name)
 	}
+}
+
+func TestCerebrasProxyHeaderIntegration(t *testing.T) {
+	// Create a mock HTTP server that returns rate limit headers
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("x-ratelimit-limit-tokens-minute", "1000")
+		w.Header().Set("x-ratelimit-remaining-tokens-minute", "800")
+		w.Header().Set("x-ratelimit-reset-tokens-minute", "45.5")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"response": "ok"}`))
+	}))
+	defer mockServer.Close()
+
+	// Parse mock server URL
+	mockURL, _ := url.Parse(mockServer.URL)
+
+	// Create proxy handler with mock backend
+	cerebrasConfig := &config.CerebrasLimits{
+		RPMLimit:       60,
+		TPMLimit:       1000,
+		MaxQueueDepth:  100,
+		RequestTimeout: 10 * time.Minute,
+	}
+
+	limiter := ratelimit.NewCerebrasLimiter(cerebrasConfig.RPMLimit, cerebrasConfig.TPMLimit)
+	estimator := token.NewTokenEstimator()
+	handler := NewCerebrasProxyHandler(limiter, estimator, cerebrasConfig)
+
+	// Set the target to our mock server
+	handler.SetTarget(mockURL)
+
+	// Create test request
+	req := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model": "claude-3"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Host = "api.cerebras.ai"
+
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Check that response headers include rate limit info
+	assert.Equal(t, "60", resp.Header.Get("X-RateLimit-Limit-RPM"))
+	assert.Equal(t, "1000", resp.Header.Get("X-RateLimit-Limit-TPM"))
+	assert.Contains(t, resp.Header.Get("X-RateLimit-Remaining-TPM"), "800")
+
+	// Verify limiter was updated
+	assert.Equal(t, 1000, handler.Limiter.CurrentTPMLimit())
+	assert.Equal(t, 800, handler.Limiter.CurrentTPMRemaining())
+}
+
+func TestCerebrasProxyHeaderParsingErrors(t *testing.T) {
+	// Create a mock server with invalid headers
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("x-ratelimit-limit-tokens-minute", "invalid")
+		w.Header().Set("x-ratelimit-remaining-tokens-minute", "800")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"response": "ok"}`))
+	}))
+	defer mockServer.Close()
+
+	// Parse mock server URL
+	mockURL, _ := url.Parse(mockServer.URL)
+
+	cerebrasConfig := &config.CerebrasLimits{
+		RPMLimit:       60,
+		TPMLimit:       1000,
+		MaxQueueDepth:  100,
+		RequestTimeout: 10 * time.Minute,
+	}
+
+	limiter := ratelimit.NewCerebrasLimiter(cerebrasConfig.RPMLimit, cerebrasConfig.TPMLimit)
+	estimator := token.NewTokenEstimator()
+	handler := NewCerebrasProxyHandler(limiter, estimator, cerebrasConfig)
+
+	// Set the target to our mock server
+	handler.SetTarget(mockURL)
+
+	req := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model": "claude-3"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Host = "api.cerebras.ai"
+
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Should still add static headers even if dynamic parsing failed
+	assert.Equal(t, "60", resp.Header.Get("X-RateLimit-Limit-RPM"))
+	assert.Equal(t, "1000", resp.Header.Get("X-RateLimit-Limit-TPM"))
+	// Current TPM limit should be 0 since header parsing failed
+	assert.Equal(t, "0", resp.Header.Get("X-RateLimit-Current-TPM-Limit"))
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -64,12 +65,20 @@ func NewCerebrasProxyHandler(
 		proxy: &httputil.ReverseProxy{
 			Director: director,
 			ModifyResponse: func(resp *http.Response) error {
-				// Add rate limit headers
+				// Parse and update limiter with header data
+				if err := limiter.UpdateFromHeaders(resp.Header); err != nil {
+					// Log but don't fail the request
+					log.Printf("Failed to parse rate limit headers: %v", err)
+				}
+
+				// Add proxy headers with current state
 				resp.Header.Set("X-RateLimit-Limit-RPM", strconv.Itoa(config.RPMLimit))
 				resp.Header.Set("X-RateLimit-Limit-TPM", strconv.Itoa(config.TPMLimit))
+				resp.Header.Set("X-RateLimit-Current-TPM-Limit", strconv.Itoa(limiter.CurrentTPMLimit()))
+				resp.Header.Set("X-RateLimit-Remaining-TPM", strconv.Itoa(limiter.CurrentTPMRemaining()))
 				resp.Header.Set("X-RateLimit-Queue-Length", strconv.Itoa(limiter.QueueLength()))
 
-				// Add circuit breaker state headers
+				// Add circuit breaker headers
 				stats := circuitBreaker.Stats()
 				resp.Header.Set("X-CircuitBreaker-State", stats.State.String())
 				resp.Header.Set("X-CircuitBreaker-Failures", strconv.Itoa(stats.Failures))
@@ -159,7 +168,7 @@ func (h *CerebrasProxyHandler) EstimateTokens(req *http.Request) (int, error) {
 
 func (h *CerebrasProxyHandler) CheckRateLimit(req *http.Request, tokens int) time.Duration {
 	requestID := h.generateRequestID(req)
-	return h.Limiter.CheckRequestWithQueue(requestID, tokens)
+	return h.Limiter.CheckRequestWithDynamicQueue(requestID, tokens)
 }
 
 func (h *CerebrasProxyHandler) generateRequestID(req *http.Request) string {
@@ -199,7 +208,7 @@ func (h *CerebrasProxyHandler) ServeHTTP(w http.ResponseWriter, req *http.Reques
 		time.Sleep(delay)
 	}
 
-	// Add rate limit headers
+	// Add static rate limit headers (dynamic headers added in ModifyResponse)
 	w.Header().Set("X-RateLimit-Limit-RPM", strconv.Itoa(h.Config.RPMLimit))
 	w.Header().Set("X-RateLimit-Limit-TPM", strconv.Itoa(h.Config.TPMLimit))
 	w.Header().Set("X-RateLimit-Queue-Length", strconv.Itoa(h.Limiter.QueueLength()))
