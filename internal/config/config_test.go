@@ -100,3 +100,25 @@ func TestAnthropicEndpointConfiguration(t *testing.T) {
 	assert.Equal(t, "/anthropic", config.Server.AnthropicEndpoint)
 	assert.Equal(t, "glm-4.6", config.EnvironmentModels.Sonnet)
 }
+
+func TestEnvironmentVariableExpansion(t *testing.T) {
+	os.Setenv("TEST_HAIKU_MODEL", "glm-4.5-test")
+	defer os.Unsetenv("TEST_HAIKU_MODEL")
+
+	yamlContent := `
+environment_models:
+  haiku: "${TEST_HAIKU_MODEL:glm-4.5-air}"
+  sonnet: "glm-4.6"
+`
+
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.yaml")
+	err := os.WriteFile(configPath, []byte(yamlContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create temp config: %v", err)
+	}
+
+	config, err := Load(configPath)
+	assert.NoError(t, err)
+	assert.Equal(t, "glm-4.5-test", config.EnvironmentModels.Haiku)
+}
