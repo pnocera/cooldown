@@ -9,6 +9,7 @@ A local-first reverse proxy with intelligent rate limiting for outgoing REST API
 ## Features
 
 - **Intelligent Rate Limiting**: Per-domain rate limiting using the leaky bucket algorithm
+- **Model-Based Routing**: Route requests based on model field in JSON payloads to different AI providers
 - **Wildcard Domain Support**: Support for patterns like `*.example.com`
 - **Cerebras AI Rate Limiting**: Dual-metric enforcement (RPM + TPM) with intelligent queuing
 - **🚀 Header-Based Rate Limiting**: Dynamic adaptation based on real-time API response headers
@@ -37,6 +38,7 @@ curl -H "Host: api.github.com" http://localhost:8080/users/octocat
 
 ### Core Documentation
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Complete configuration options and examples
+- **[Model-Based Routing](docs/MODEL_ROUTING.md)** - Route requests based on model field to different AI providers
 - **[Cerebras AI Rate Limiting](docs/CEREBRAS_RATE_LIMITING.md)** - Advanced Cerebras AI rate limiting
 - **[Load Testing](docs/LOAD_TESTING.md)** - Performance testing framework usage
 - **[Development Guide](docs/DEVELOPMENT.md)** - Architecture, testing, and contributing
@@ -102,6 +104,7 @@ make build-all
 │   └── loadtest/          # Load testing CLI tool
 ├── internal/
 │   ├── config/            # Configuration management
+│   ├── modelrouting/      # Model-based routing middleware
 │   ├── monitoring/        # Metrics and health monitoring
 │   ├── featureflags/      # Feature flag management
 │   ├── proxy/             # HTTP proxy handler

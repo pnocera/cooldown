@@ -43,3 +43,36 @@ cerebras_limits:
 #   max_queue_depth: 20        # Small queue for testing
 #   request_timeout: 30s       # Short timeout for quick feedback
 #   priority_threshold: 0.8    # Higher threshold for testing behavior
+
+# Model-based routing configuration
+model_routing:
+  # Enable model-based routing (disabled by default)
+  enabled: true
+  # Default target URL for requests without a model or with unknown models
+  default_target: "https://api.openai.com/v1"
+  # Model to endpoint mappings
+  models:
+    # OpenAI models
+    "gpt-4": "https://api.openai.com/v1"
+    "gpt-4-turbo": "https://api.openai.com/v1"
+    "gpt-3.5-turbo": "https://api.openai.com/v1"
+    "gpt-4o": "https://api.openai.com/v1"
+    "gpt-4o-mini": "https://api.openai.com/v1"
+
+    # Anthropic models
+    "claude-3-opus": "https://api.anthropic.com/v1"
+    "claude-3-sonnet": "https://api.anthropic.com/v1"
+    "claude-3-haiku": "https://api.anthropic.com/v1"
+    "claude-3-5-sonnet": "https://api.anthropic.com/v1"
+
+    # Google models
+    "gemini-pro": "https://generativelanguage.googleapis.com/v1beta"
+    "gemini-pro-vision": "https://generativelanguage.googleapis.com/v1beta"
+
+    # Cerebras models
+    "llama3-8b": "https://api.cerebras.ai/v1"
+    "llama3-70b": "https://api.cerebras.ai/v1"
+    "mixtral-8x7b": "https://api.cerebras.ai/v1"
+
+    # Other providers
+    "zephyr-7b-beta": "https://api.huggingface.co/v1"
