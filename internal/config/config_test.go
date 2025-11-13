@@ -80,3 +80,23 @@ cerebras_limits:
 	assert.Equal(t, 5*time.Second, config.CerebrasLimits.RateLimits.HeaderTimeout)
 	assert.Equal(t, 100*time.Millisecond, config.CerebrasLimits.RateLimits.ResetBuffer)
 }
+
+func TestAnthropicEndpointConfiguration(t *testing.T) {
+	config := Config{
+		Server: ServerConfig{
+			AnthropicEndpoint: "/anthropic",
+			OpenAIEndpoint:    "/openai",
+			Port:             5730,
+			BindAddress:      "127.0.0.1",
+			APIKeyRequired:   false,
+		},
+		EnvironmentModels: EnvironmentModels{
+			Haiku:   "glm-4.5-air",
+			Sonnet:  "glm-4.6",
+			Opus:    "glm-4.6",
+		},
+	}
+
+	assert.Equal(t, "/anthropic", config.Server.AnthropicEndpoint)
+	assert.Equal(t, "glm-4.6", config.EnvironmentModels.Sonnet)
+}
