@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cooldownp/cooldown-proxy/internal/config"
+	"github.com/cooldownp/cooldown-proxy/internal/modelrouting"
 	"github.com/cooldownp/cooldown-proxy/internal/proxy"
 	"github.com/cooldownp/cooldown-proxy/internal/ratelimit"
 	"github.com/cooldownp/cooldown-proxy/internal/router"
@@ -57,16 +58,43 @@ func main() {
 			cfg.CerebrasLimits.MaxQueueDepth, cfg.CerebrasLimits.RequestTimeout)
 	}
 
+	// Initialize model routing if configured
+	var modelRoutingMiddleware *modelrouting.ModelRoutingMiddleware
+	if cfg.ModelRouting != nil && cfg.ModelRouting.Enabled {
+		log.Printf("Initializing model routing with %d models configured", len(cfg.ModelRouting.Models))
+		modelRoutingMiddleware = modelrouting.NewModelRoutingMiddleware(cfg.ModelRouting, nil)
+	}
+
 	// Initialize router
 	routes := make(map[string]*url.URL)
 	// TODO: Load routes from configuration or use direct passthrough
 
 	r := router.New(routes, rateLimiter)
 
-	// Create composite handler that routes to Cerebras handler when appropriate
+	// Create composite handler that routes between all handlers appropriately
 	compositeHandler := &CompositeHandler{
 		cerebrasHandler: cerebrasHandler,
 		standardRouter:  r,
+		modelRouting:    modelRoutingMiddleware,
+	}
+
+	// If model routing is enabled, wrap it properly
+	if modelRoutingMiddleware != nil {
+		// Create base handler chain
+		baseHandler := &CompositeHandler{
+			cerebrasHandler: cerebrasHandler,
+			standardRouter:  r,
+			modelRouting:    nil, // Don't recurse
+		}
+
+		// Wrap base handler with model routing
+		modelRoutingMiddleware = modelrouting.NewModelRoutingMiddleware(cfg.ModelRouting, baseHandler)
+
+		compositeHandler = &CompositeHandler{
+			cerebrasHandler: nil, // Handled by baseHandler
+			standardRouter:  nil, // Handled by baseHandler
+			modelRouting:    modelRoutingMiddleware,
+		}
 	}
 
 	// Create HTTP server
@@ -101,13 +129,20 @@ func main() {
 	log.Println("Server exited")
 }
 
-// CompositeHandler routes requests between Cerebras handler and standard router
+// CompositeHandler routes requests between Cerebras handler, model routing, and standard router
 type CompositeHandler struct {
 	cerebrasHandler *proxy.CerebrasProxyHandler
 	standardRouter  http.Handler
+	modelRouting    *modelrouting.ModelRoutingMiddleware
 }
 
 func (ch *CompositeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Apply model routing first if enabled
+	if ch.modelRouting != nil {
+		ch.modelRouting.ServeHTTP(w, r)
+		return
+	}
+
 	// Route Cerebras requests to the special handler if configured
 	if ch.cerebrasHandler != nil && ch.isCerebrasRequest(r) {
 		ch.cerebrasHandler.ServeHTTP(w, r)
