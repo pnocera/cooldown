@@ -11,7 +11,8 @@ cooldown-proxy-*
 *.test
 
 .claude/
-
+cerebras-code-mcp
+claude-code-router
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 

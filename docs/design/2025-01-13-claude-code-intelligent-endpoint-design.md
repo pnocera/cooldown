@@ -7,7 +7,7 @@ Design for integrating dual intelligent endpoints into the Cooldown Proxy: `/ant
 ## Architecture
 
 ### Dual Endpoint Structure
-- **`/anthropic`**: Claude Code endpoint (port 5730) with model routing
+- **`/anthropic`**: Claude Code endpoint with model routing
 - **`/openai`**: Existing OpenAI-compatible endpoint (preserved behavior)
 
 ### Anthropic Request Flow
@@ -22,7 +22,6 @@ Provider API → Parse Headers → Update Per-Key Limits → Response Transform 
 #### 1. Dual Endpoint Handler
 - **`/anthropic`**: Claude Code SDK compatible, model-based routing
 - **`/openai`**: Existing OpenAI API compatibility
-- **Port**: 5730 (configurable)
 - **Authentication**: Optional API key with localhost fallback
 
 #### 2. Environment-Based Model Router
@@ -139,7 +138,7 @@ environment_models:
 
 providers:
   cerebras:
-    endpoint: "https://api.cerebras.ai/v1/chat/completions"
+    endpoint: "https://api.cerebras.ai/v1"
     models: ["glm-4.6", "glm-4.5-air"]
     load_balancing:
       strategy: "least_used"  # round_robin, least_used, weighted_random
@@ -159,7 +158,7 @@ providers:
       backoff_threshold: 100
 
   zhipu:
-    endpoint: "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+    endpoint: "https://open.bigmodel.cn/api/paas/v4"
     models: ["glm-4-flash", "glm-4-airx"]
     api_key: "${ZHIPU_API_KEY}"
     rate_limiting:
@@ -167,7 +166,7 @@ providers:
       requests_per_minute: 60
 
   openrouter:
-    endpoint: "https://openrouter.ai/api/v1/chat/completions"
+    endpoint: "https://openrouter.ai/api/v1"
     models: ["deepseek/deepseek-chat", "anthropic/claude-3.5-sonnet"]
     api_key: "${OPENROUTER_API_KEY}"
     rate_limiting:
