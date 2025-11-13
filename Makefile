@@ -1,7 +1,13 @@
 .PHONY: help build build-all build-windows build-linux build-darwin build-loadtest test fmt vet check dev quick-start version clean
 
-# Detect OS and set appropriate binary extension using Go's environment
-BINARY_EXT=$(shell go env GOOS | grep -q "windows" && echo ".exe" || echo "")
+# Detect OS and set appropriate binary extension
+# Use Go's environment to check current OS
+GOOS := $(shell go env GOOS)
+ifeq ($(GOOS),windows)
+	BINARY_EXT=.exe
+else
+	BINARY_EXT=
+endif
 
 BINARY_NAME=cooldown-proxy$(BINARY_EXT)
 LOADTEST_BINARY=loadtest$(BINARY_EXT)
@@ -25,12 +31,12 @@ help:
 	@echo "  clean          - Clean build artifacts"
 
 build:
-	@echo "Building cooldown-proxy for $(shell go env GOOS)..."
+	@echo "Building cooldown-proxy..."
 	go build -o $(BINARY_NAME) ./cmd/proxy
 	@echo "Built $(BINARY_NAME)"
 
 build-loadtest:
-	@echo "Building loadtest tool for $(shell go env GOOS)..."
+	@echo "Building loadtest tool..."
 	go build -o $(LOADTEST_BINARY) ./cmd/loadtest
 	@echo "Built $(LOADTEST_BINARY)"
 
@@ -97,9 +103,7 @@ quick-start: dev
 
 version:
 	@echo "Cooldown Proxy"
-	@echo "Go version: $(shell go version)"
-	@echo "Go OS: $(shell go env GOOS)"
-	@echo "Go ARCH: $(shell go env GOARCH)"
 	@echo "Binary extension: $(BINARY_EXT)"
 	@echo "Binary name: $(BINARY_NAME)"
-	@echo "Git commit: $(shell git rev-parse --short HEAD 2>/dev/null || echo 'not a git repository')"
+	@echo "Run 'go version' for Go version info"
+	@echo "Run 'git rev-parse --short HEAD' for git commit info"
