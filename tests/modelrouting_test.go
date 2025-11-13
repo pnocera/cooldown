@@ -55,8 +55,8 @@ func TestModelRoutingEndToEnd(t *testing.T) {
 				Enabled:       true,
 				DefaultTarget: "https://api.openai.com/v1",
 				Models: map[string]string{
-					"gpt-4":          "https://api.openai.com/v1",
-					"claude-3-opus":  "https://api.anthropic.com/v1",
+					"gpt-4":           "https://api.openai.com/v1",
+					"claude-3-opus":   "https://api.anthropic.com/v1",
 					"claude-3-sonnet": "https://api.anthropic.com/v1",
 				},
 			}

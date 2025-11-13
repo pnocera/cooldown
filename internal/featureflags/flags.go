@@ -10,11 +10,11 @@ import (
 
 // FeatureFlag represents a feature flag with configuration
 type FeatureFlag struct {
-	Name         string        `json:"name"`
-	Enabled      bool          `json:"enabled"`
-	Description  string        `json:"description"`
-	LastModified time.Time     `json:"last_modified"`
-	RolloutPercentage float64  `json:"rollout_percentage"` // 0-100 for gradual rollout
+	Name              string    `json:"name"`
+	Enabled           bool      `json:"enabled"`
+	Description       string    `json:"description"`
+	LastModified      time.Time `json:"last_modified"`
+	RolloutPercentage float64   `json:"rollout_percentage"` // 0-100 for gradual rollout
 }
 
 // FeatureFlagManager manages feature flags for the header-based rate limiting system
@@ -41,59 +41,59 @@ func NewFeatureFlagManager() *FeatureFlagManager {
 // initializeDefaultFlags sets up the default feature flags
 func (ffm *FeatureFlagManager) initializeDefaultFlags() {
 	ffm.flags["header_based_rate_limiting"] = &FeatureFlag{
-		Name:             "header_based_rate_limiting",
-		Enabled:          true,  // Enabled by default for production
-		Description:      "Enable dynamic rate limiting based on Cerebras API response headers",
+		Name:              "header_based_rate_limiting",
+		Enabled:           true, // Enabled by default for production
+		Description:       "Enable dynamic rate limiting based on Cerebras API response headers",
 		RolloutPercentage: 100.0, // Full rollout
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 
 	ffm.flags["header_fallback"] = &FeatureFlag{
-		Name:             "header_fallback",
-		Enabled:          true,
-		Description:      "Enable fallback to static rate limits when headers fail",
+		Name:              "header_fallback",
+		Enabled:           true,
+		Description:       "Enable fallback to static rate limits when headers fail",
 		RolloutPercentage: 100.0,
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 
 	ffm.flags["circuit_breaker_enhancement"] = &FeatureFlag{
-		Name:             "circuit_breaker_enhancement",
-		Enabled:          true,
-		Description:      "Enhanced circuit breaker with header-based rate limiting integration",
+		Name:              "circuit_breaker_enhancement",
+		Enabled:           true,
+		Description:       "Enhanced circuit breaker with header-based rate limiting integration",
 		RolloutPercentage: 100.0,
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 
 	ffm.flags["metrics_collection"] = &FeatureFlag{
-		Name:             "metrics_collection",
-		Enabled:          true,
-		Description:      "Collect detailed metrics for header-based rate limiting",
+		Name:              "metrics_collection",
+		Enabled:           true,
+		Description:       "Collect detailed metrics for header-based rate limiting",
 		RolloutPercentage: 100.0,
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 
 	ffm.flags["dynamic_queue_prioritization"] = &FeatureFlag{
-		Name:             "dynamic_queue_prioritization",
-		Enabled:          true,
-		Description:      "Dynamic queue prioritization based on token usage and wait times",
+		Name:              "dynamic_queue_prioritization",
+		Enabled:           true,
+		Description:       "Dynamic queue prioritization based on token usage and wait times",
 		RolloutPercentage: 100.0,
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 
 	ffm.flags["rate_limit_buffer_adjustment"] = &FeatureFlag{
-		Name:             "rate_limit_buffer_adjustment",
-		Enabled:          true,
-		Description:      "Automatically adjust reset buffer based on observed clock skew",
+		Name:              "rate_limit_buffer_adjustment",
+		Enabled:           true,
+		Description:       "Automatically adjust reset buffer based on observed clock skew",
 		RolloutPercentage: 50.0, // Gradual rollout for experimental feature
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 
 	ffm.flags["header_validation_strict"] = &FeatureFlag{
-		Name:             "header_validation_strict",
-		Enabled:          false, // Disabled by default to avoid breaking changes
-		Description:      "Strict validation of rate limit headers (reject malformed headers)",
+		Name:              "header_validation_strict",
+		Enabled:           false, // Disabled by default to avoid breaking changes
+		Description:       "Strict validation of rate limit headers (reject malformed headers)",
 		RolloutPercentage: 0.0,
-		LastModified:     time.Now(),
+		LastModified:      time.Now(),
 	}
 }
 
@@ -224,10 +224,10 @@ func (ffm *FeatureFlagManager) GetFlag(featureName string) (*FeatureFlag, error)
 
 	// Return a copy to avoid concurrent modification
 	return &FeatureFlag{
-		Name:             flag.Name,
-		Enabled:          flag.Enabled,
-		Description:      flag.Description,
-		LastModified:     flag.LastModified,
+		Name:              flag.Name,
+		Enabled:           flag.Enabled,
+		Description:       flag.Description,
+		LastModified:      flag.LastModified,
 		RolloutPercentage: flag.RolloutPercentage,
 	}, nil
 }
@@ -240,10 +240,10 @@ func (ffm *FeatureFlagManager) GetAllFlags() map[string]*FeatureFlag {
 	result := make(map[string]*FeatureFlag)
 	for name, flag := range ffm.flags {
 		result[name] = &FeatureFlag{
-			Name:             flag.Name,
-			Enabled:          flag.Enabled,
-			Description:      flag.Description,
-			LastModified:     flag.LastModified,
+			Name:              flag.Name,
+			Enabled:           flag.Enabled,
+			Description:       flag.Description,
+			LastModified:      flag.LastModified,
 			RolloutPercentage: flag.RolloutPercentage,
 		}
 	}

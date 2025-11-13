@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**IMPORTANT**
+- **use desktop-commander mcp tools**
+- **use web-search-prime mcp tools for web searching**
+
 ## Project Overview
 
 Cooldown Proxy is a local-first reverse proxy with intelligent rate limiting for outgoing REST API requests using the leaky bucket algorithm. It's written in Go and provides per-domain rate limiting with wildcard domain support.

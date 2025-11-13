@@ -10,10 +10,10 @@ import (
 // MetricsCollector collects and tracks performance metrics for header-based rate limiting
 type MetricsCollector struct {
 	// Request metrics
-	TotalRequests         int64
-	SuccessRequests       int64
-	ErrorRequests         int64
-	RateLimitedRequests   int64
+	TotalRequests       int64
+	SuccessRequests     int64
+	ErrorRequests       int64
+	RateLimitedRequests int64
 
 	// Header parsing metrics
 	HeaderParsingAttempts int64
@@ -21,37 +21,37 @@ type MetricsCollector struct {
 	HeaderParsingErrors   int64
 
 	// Latency metrics
-	TotalLatency          int64 // Total latency in nanoseconds
-	MinLatency            int64 // Min latency in nanoseconds
-	MaxLatency            int64 // Max latency in nanoseconds
+	TotalLatency int64 // Total latency in nanoseconds
+	MinLatency   int64 // Min latency in nanoseconds
+	MaxLatency   int64 // Max latency in nanoseconds
 
 	// Rate limiting metrics
-	DynamicRateLimitHits  int64
-	StaticFallbackHits    int64
-	QueueOperations       int64
+	DynamicRateLimitHits int64
+	StaticFallbackHits   int64
+	QueueOperations      int64
 
 	// Circuit breaker metrics
-	CircuitBreakerOpens   int64
-	CircuitBreakerCloses  int64
+	CircuitBreakerOpens  int64
+	CircuitBreakerCloses int64
 
 	// Performance metrics
-	TPMLimits             []int64 // Recent TPM limit values
-	TPMRemaining          []int64 // Recent TPM remaining values
+	TPMLimits    []int64 // Recent TPM limit values
+	TPMRemaining []int64 // Recent TPM remaining values
 
 	// Timing
-	StartTime             time.Time
-	LastUpdateTime        int64 // Unix nanoseconds for atomic operations
+	StartTime      time.Time
+	LastUpdateTime int64 // Unix nanoseconds for atomic operations
 
 	// Thread safety
-	mu                    sync.RWMutex
+	mu sync.RWMutex
 }
 
 // NewMetricsCollector creates a new metrics collector
 func NewMetricsCollector() *MetricsCollector {
 	return &MetricsCollector{
-		StartTime:  time.Now(),
-		MinLatency: int64(^uint64(0) >> 1), // Max int64
-		TPMLimits:  make([]int64, 0, 100),
+		StartTime:    time.Now(),
+		MinLatency:   int64(^uint64(0) >> 1), // Max int64
+		TPMLimits:    make([]int64, 0, 100),
 		TPMRemaining: make([]int64, 0, 100),
 	}
 }
@@ -173,18 +173,18 @@ func (m *MetricsCollector) GetMetrics() MetricsSnapshot {
 	m.mu.RUnlock()
 
 	return MetricsSnapshot{
-		TotalRequests:        totalReqs,
-		SuccessRequests:      successReqs,
-		ErrorRequests:        errorReqs,
-		RateLimitedRequests:  rateLimitedReqs,
+		TotalRequests:       totalReqs,
+		SuccessRequests:     successReqs,
+		ErrorRequests:       errorReqs,
+		RateLimitedRequests: rateLimitedReqs,
 
 		HeaderParsingAttempts: headerAttempts,
 		HeaderParsingSuccess:  headerSuccess,
 		HeaderParsingErrors:   headerErrors,
 
-		AverageLatency:       time.Duration(totalLatency / max(totalReqs, 1)),
-		MinLatency:           time.Duration(minLatency),
-		MaxLatency:           time.Duration(maxLatency),
+		AverageLatency: time.Duration(totalLatency / max(totalReqs, 1)),
+		MinLatency:     time.Duration(minLatency),
+		MaxLatency:     time.Duration(maxLatency),
 
 		DynamicRateLimitHits: dynamicHits,
 		StaticFallbackHits:   staticHits,
@@ -193,8 +193,8 @@ func (m *MetricsCollector) GetMetrics() MetricsSnapshot {
 		CircuitBreakerOpens:  cbOpens,
 		CircuitBreakerCloses: cbCloses,
 
-		CurrentTPMLimit:      currentTPMLimit,
-		CurrentTPMRemaining:  currentTPMRemaining,
+		CurrentTPMLimit:     currentTPMLimit,
+		CurrentTPMRemaining: currentTPMRemaining,
 
 		RequestsPerSecond:    float64(totalReqs) / uptime.Seconds(),
 		SuccessRate:          float64(successReqs) / float64(max(totalReqs, 1)) * 100,
@@ -203,23 +203,23 @@ func (m *MetricsCollector) GetMetrics() MetricsSnapshot {
 		HeaderParsingRate:    float64(headerSuccess) / float64(max(headerAttempts, 1)) * 100,
 		DynamicRateLimitRate: float64(dynamicHits) / float64(max(dynamicHits+staticHits, 1)) * 100,
 
-		Uptime:               uptime,
-		LastUpdateTime:       lastUpdate,
+		Uptime:         uptime,
+		LastUpdateTime: lastUpdate,
 	}
 }
 
 // MetricsSnapshot represents a snapshot of current metrics
 type MetricsSnapshot struct {
 	// Request counts
-	TotalRequests        int64   `json:"total_requests"`
-	SuccessRequests      int64   `json:"success_requests"`
-	ErrorRequests        int64   `json:"error_requests"`
-	RateLimitedRequests  int64   `json:"rate_limited_requests"`
+	TotalRequests       int64 `json:"total_requests"`
+	SuccessRequests     int64 `json:"success_requests"`
+	ErrorRequests       int64 `json:"error_requests"`
+	RateLimitedRequests int64 `json:"rate_limited_requests"`
 
 	// Header parsing
-	HeaderParsingAttempts int64  `json:"header_parsing_attempts"`
-	HeaderParsingSuccess  int64  `json:"header_parsing_success"`
-	HeaderParsingErrors   int64  `json:"header_parsing_errors"`
+	HeaderParsingAttempts int64 `json:"header_parsing_attempts"`
+	HeaderParsingSuccess  int64 `json:"header_parsing_success"`
+	HeaderParsingErrors   int64 `json:"header_parsing_errors"`
 
 	// Latency metrics
 	AverageLatency time.Duration `json:"average_latency"`
@@ -227,9 +227,9 @@ type MetricsSnapshot struct {
 	MaxLatency     time.Duration `json:"max_latency"`
 
 	// Rate limiting metrics
-	DynamicRateLimitHits int64   `json:"dynamic_rate_limit_hits"`
-	StaticFallbackHits   int64   `json:"static_fallback_hits"`
-	QueueOperations      int64   `json:"queue_operations"`
+	DynamicRateLimitHits int64 `json:"dynamic_rate_limit_hits"`
+	StaticFallbackHits   int64 `json:"static_fallback_hits"`
+	QueueOperations      int64 `json:"queue_operations"`
 
 	// Circuit breaker
 	CircuitBreakerOpens  int64 `json:"circuit_breaker_opens"`
@@ -254,11 +254,11 @@ type MetricsSnapshot struct {
 
 // HealthStatus represents the health status of the header-based rate limiting system
 type HealthStatus struct {
-	Status    string                 `json:"status"`
-	Healthy   bool                   `json:"healthy"`
-	Issues    []string               `json:"issues,omitempty"`
-	Metrics   MetricsSnapshot        `json:"metrics"`
-	Timestamp time.Time              `json:"timestamp"`
+	Status    string          `json:"status"`
+	Healthy   bool            `json:"healthy"`
+	Issues    []string        `json:"issues,omitempty"`
+	Metrics   MetricsSnapshot `json:"metrics"`
+	Timestamp time.Time       `json:"timestamp"`
 }
 
 // CheckHealth performs health checks and returns health status
@@ -320,7 +320,7 @@ func (m *MetricsCollector) Reset() {
 	atomic.StoreInt64(&m.HeaderParsingSuccess, 0)
 	atomic.StoreInt64(&m.HeaderParsingErrors, 0)
 	atomic.StoreInt64(&m.TotalLatency, 0)
-	atomic.StoreInt64(&m.MinLatency, int64(^uint64(0) >> 1))
+	atomic.StoreInt64(&m.MinLatency, int64(^uint64(0)>>1))
 	atomic.StoreInt64(&m.MaxLatency, 0)
 	atomic.StoreInt64(&m.DynamicRateLimitHits, 0)
 	atomic.StoreInt64(&m.StaticFallbackHits, 0)

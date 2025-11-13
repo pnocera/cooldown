@@ -102,7 +102,7 @@ func (h *MetricsHandler) ResetMetricsHandler(w http.ResponseWriter, r *http.Requ
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"status": "ok",
+		"status":  "ok",
 		"message": "Metrics reset successfully",
 	})
 }

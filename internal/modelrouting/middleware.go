@@ -16,10 +16,10 @@ import (
 
 // Metrics tracks model routing statistics
 type Metrics struct {
-	RoutingAttempts      int64
-	RoutingSuccess       int64
-	RoutingFallback      int64
-	ParsingErrors        int64
+	RoutingAttempts       int64
+	RoutingSuccess        int64
+	RoutingFallback       int64
+	ParsingErrors         int64
 	TotalProcessingTimeNs int64 // Stored as nanoseconds for atomic operations
 }
 
@@ -123,10 +123,10 @@ func (m *ModelRoutingMiddleware) ParseModelField(reader io.Reader) (string, erro
 // GetMetrics returns a copy of the current metrics
 func (m *ModelRoutingMiddleware) GetMetrics() Metrics {
 	return Metrics{
-		RoutingAttempts:      atomic.LoadInt64(&m.metrics.RoutingAttempts),
-		RoutingSuccess:       atomic.LoadInt64(&m.metrics.RoutingSuccess),
-		RoutingFallback:      atomic.LoadInt64(&m.metrics.RoutingFallback),
-		ParsingErrors:        atomic.LoadInt64(&m.metrics.ParsingErrors),
+		RoutingAttempts:       atomic.LoadInt64(&m.metrics.RoutingAttempts),
+		RoutingSuccess:        atomic.LoadInt64(&m.metrics.RoutingSuccess),
+		RoutingFallback:       atomic.LoadInt64(&m.metrics.RoutingFallback),
+		ParsingErrors:         atomic.LoadInt64(&m.metrics.ParsingErrors),
 		TotalProcessingTimeNs: atomic.LoadInt64(&m.metrics.TotalProcessingTimeNs),
 	}
 }
@@ -162,13 +162,13 @@ func (m *ModelRoutingMiddleware) HealthCheck() map[string]interface{} {
 	}
 
 	result := map[string]interface{}{
-		"status":              status,
-		"enabled":             m.config != nil && m.config.Enabled,
-		"routing_attempts":   attempts,
-		"routing_success":    success,
-		"routing_fallback":   fallback,
-		"parsing_errors":     errors,
-		"success_rate":       successRate,
+		"status":            status,
+		"enabled":           m.config != nil && m.config.Enabled,
+		"routing_attempts":  attempts,
+		"routing_success":   success,
+		"routing_fallback":  fallback,
+		"parsing_errors":    errors,
+		"success_rate":      successRate,
 		"avg_processing_ms": avgProcessingTime,
 	}
 
