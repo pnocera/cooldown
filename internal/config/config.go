@@ -69,9 +69,12 @@ func expandEnvironmentVariablesInConfig(config *Config) {
 		config.Providers[i].Endpoint = expandEnvironmentVariables(config.Providers[i].Endpoint)
 		config.Providers[i].APIKey = expandEnvironmentVariables(config.Providers[i].APIKey)
 
-		for j := range config.Providers[i].LoadBalancing.APIKeys {
-			config.Providers[i].LoadBalancing.APIKeys[j].Key = expandEnvironmentVariables(
-				config.Providers[i].LoadBalancing.APIKeys[j].Key)
+		// Check if LoadBalancing is not nil before accessing APIKeys
+		if config.Providers[i].LoadBalancing != nil {
+			for j := range config.Providers[i].LoadBalancing.APIKeys {
+				config.Providers[i].LoadBalancing.APIKeys[j].Key = expandEnvironmentVariables(
+					config.Providers[i].LoadBalancing.APIKeys[j].Key)
+			}
 		}
 	}
 }

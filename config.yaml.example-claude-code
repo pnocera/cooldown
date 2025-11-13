@@ -1,0 +1,65 @@
+# Claude Code Intelligent Endpoint Configuration
+server:
+  anthropic_endpoint: "/anthropic"
+  openai_endpoint: "/openai"
+  port: 5730
+  bind_address: "127.0.0.1"
+  api_key_required: false
+
+environment_models:
+  haiku: "${ANTHROPIC_DEFAULT_HAIKU_MODEL:glm-4.5-air}"
+  sonnet: "${ANTHROPIC_DEFAULT_SONNET_MODEL:glm-4.6}"
+  opus: "${ANTHROPIC_DEFAULT_OPUS_MODEL:glm-4.6}"
+
+providers:
+  - name: "cerebras"
+    endpoint: "https://api.cerebras.ai/v1"
+    models: ["glm-4.6", "glm-4.5-air"]
+    load_balancing:
+      strategy: "least_used"
+      api_keys:
+        - key: "${CEREBRAS_API_KEY_1}"
+          weight: 1
+          max_requests_per_minute: 60
+        - key: "${CEREBRAS_API_KEY_2}"
+          weight: 2
+          max_requests_per_minute: 120
+    rate_limiting:
+      type: "per_key_cerebras_headers"
+      safety_margin: 0.2
+      backoff_threshold: 100
+
+  - name: "zhipu"
+    endpoint: "https://open.bigmodel.cn/api/paas/v4"
+    models: ["glm-4-flash", "glm-4-airx"]
+    api_key: "${ZHIPU_API_KEY}"
+    rate_limiting:
+      type: "fixed_rpm"
+      requests_per_minute: 60
+
+reasoning_injection:
+  enabled: true
+  models: ["glm-4.6", "glm-4.5-air"]
+  prompt_template: |
+    You are an expert reasoning model.
+    Always think step by step before answering.
+    Use interleaved thinking: plan → act → reflect
+    Format your reasoning in <reasoning_content> blocks.
+    Carry reasoning forward between tool calls.
+
+monitoring:
+  metrics_enabled: true
+  health_endpoint: "/health"
+  prometheus_endpoint: "/metrics"
+  log_level: "info"
+
+# Existing rate limits for other domains
+rate_limits:
+  - domain: "api.example.com"
+    requests_per_second: 10
+  - domain: "*.test.com"
+    requests_per_second: 5
+
+default_rate_limit:
+  domain: "default"
+  requests_per_second: 1
