@@ -13,8 +13,16 @@ func Load(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
+	return LoadFromYAMLBytes(data)
+}
+
+func LoadFromYAMLString(yamlContent string) (*Config, error) {
+	return LoadFromYAMLBytes([]byte(yamlContent))
+}
+
+func LoadFromYAMLBytes(data []byte) (*Config, error) {
 	var config Config
-	err = yaml.Unmarshal(data, &config)
+	err := yaml.Unmarshal(data, &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
