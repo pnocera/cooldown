@@ -6,12 +6,13 @@ import (
 	"net/url"
 
 	"github.com/cooldownp/cooldown-proxy/internal/config"
+	"github.com/cooldownp/cooldown-proxy/internal/model"
 )
 
 type AnthropicHandler struct {
 	config     *config.Config
 	router     *Router
-	modelRouter *ModelRouter
+	modelRouter *model.ModelRouter
 }
 
 type Router struct {
@@ -52,14 +53,6 @@ type AnthropicContent struct {
 	Text string `json:"text,omitempty"`
 }
 
-// Stub types for now - will be implemented in later tasks
-type ModelRouter struct {
-	config *config.Config
-}
-
-func NewModelRouter(config *config.Config) *ModelRouter {
-	return &ModelRouter{config: config}
-}
 
 func NewRouter(config *config.Config) *Router {
 	return &Router{
@@ -71,7 +64,7 @@ func NewAnthropicHandler(config *config.Config) *AnthropicHandler {
 	return &AnthropicHandler{
 		config:     config,
 		router:     NewRouter(config),
-		modelRouter: NewModelRouter(config),
+		modelRouter: model.NewModelRouter(config),
 	}
 }
 
