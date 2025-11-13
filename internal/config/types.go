@@ -3,10 +3,11 @@ package config
 import "time"
 
 type Config struct {
-	Server           ServerConfig    `yaml:"server"`
-	RateLimits       []RateLimitRule `yaml:"rate_limits"`
-	DefaultRateLimit *RateLimitRule  `yaml:"default_rate_limit"`
-	CerebrasLimits   CerebrasLimits  `yaml:"cerebras_limits"`
+	Server           ServerConfig        `yaml:"server"`
+	RateLimits       []RateLimitRule     `yaml:"rate_limits"`
+	DefaultRateLimit *RateLimitRule      `yaml:"default_rate_limit"`
+	CerebrasLimits   CerebrasLimits      `yaml:"cerebras_limits"`
+	ModelRouting     *ModelRoutingConfig `yaml:"model_routing"`
 }
 
 type ServerConfig struct {
@@ -33,6 +34,12 @@ type CerebrasLimits struct {
 	MaxQueueDepth     int                     `yaml:"max_queue_depth"`
 	RequestTimeout    time.Duration           `yaml:"request_timeout"`
 	PriorityThreshold float64                 `yaml:"priority_threshold"`
+}
+
+type ModelRoutingConfig struct {
+	Enabled       bool              `yaml:"enabled"`
+	DefaultTarget string            `yaml:"default_target"`
+	Models        map[string]string `yaml:"models"`
 }
 
 // Set default values for CerebrasLimits
