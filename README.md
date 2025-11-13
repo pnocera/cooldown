@@ -10,6 +10,8 @@ A local-first reverse proxy with intelligent rate limiting for outgoing REST API
 
 - **Intelligent Rate Limiting**: Per-domain rate limiting using the leaky bucket algorithm
 - **Model-Based Routing**: Route requests based on model field in JSON payloads to different AI providers
+- **Claude Code Integration**: Dual endpoints (/anthropic + /openai) with multi-provider support and reasoning injection
+- **Multi-Provider Support**: Cerebras, Zhipu with API key load balancing and dynamic rate limiting
 - **Wildcard Domain Support**: Support for patterns like `*.example.com`
 - **Cerebras AI Rate Limiting**: Dual-metric enforcement (RPM + TPM) with intelligent queuing
 - **🚀 Header-Based Rate Limiting**: Dynamic adaptation based on real-time API response headers
@@ -47,6 +49,9 @@ curl -H "Host: api.github.com" http://localhost:8080/users/octocat
 - **[Header-Based Rate Limiting Examples](docs/examples/header-rate-limiting.md)** - Configuration, examples, and troubleshooting
 - **[Performance Analysis](PERFORMANCE_ANALYSIS.md)** - Benchmarks, load testing, and production metrics
 - **[Monitoring Guide](MONITORING_GUIDE.md)** - Health checks, metrics, and alerting
+
+### Claude Code Integration
+- **[Claude Code Integration Guide](docs/claude-code-integration.md)** - Configure Claude Code with intelligent model routing
 
 ### Design & Planning
 - **[Design Documents](docs/design/)** - Technical design specifications
