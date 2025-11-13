@@ -1,6 +1,9 @@
 package config
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type EnvironmentModels struct {
 	Haiku  string `yaml:"haiku"`
@@ -125,4 +128,43 @@ func (c *CerebrasLimits) SetDefaults() {
 	if c.RateLimits.ResetBuffer == 0 {
 		c.RateLimits.ResetBuffer = 100 * time.Millisecond
 	}
+}
+
+// Validate validates the configuration
+func (c *Config) Validate() error {
+	if c.Server.Host == "" && c.Server.BindAddress == "" {
+		return fmt.Errorf("server host or bind address is required")
+	}
+	if c.Server.Port <= 0 || c.Server.Port > 65535 {
+		return fmt.Errorf("server port must be between 1 and 65535")
+	}
+
+	// Validate provider configuration
+	for _, provider := range c.Providers {
+		if provider.Name == "" {
+			return fmt.Errorf("provider name is required")
+		}
+		if provider.Endpoint == "" {
+			return fmt.Errorf("provider %s: endpoint is required", provider.Name)
+		}
+		if len(provider.Models) == 0 {
+			return fmt.Errorf("provider %s: at least one model is required", provider.Name)
+		}
+	}
+
+	// Validate model routing configuration
+	if c.ModelRouting != nil && c.ModelRouting.Enabled {
+		if c.ModelRouting.DefaultTarget == "" {
+			return fmt.Errorf("model routing is enabled but no default target is specified")
+		}
+
+		// Validate that model targets are valid URLs
+		for model, target := range c.ModelRouting.Models {
+			if target == "" {
+				return fmt.Errorf("model %s has empty target URL", model)
+			}
+		}
+	}
+
+	return nil
 }

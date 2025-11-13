@@ -41,6 +41,11 @@ func LoadFromYAMLBytes(data []byte) (*Config, error) {
 	// Expand environment variables
 	expandEnvironmentVariablesInConfig(&config)
 
+	// Validate configuration
+	if err := config.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
+	}
+
 	return &config, nil
 }
 

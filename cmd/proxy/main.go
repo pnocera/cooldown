@@ -14,6 +14,7 @@ import (
 
 	"github.com/cooldownp/cooldown-proxy/internal/config"
 	"github.com/cooldownp/cooldown-proxy/internal/handler"
+	"github.com/cooldownp/cooldown-proxy/internal/modelrouting"
 	"github.com/cooldownp/cooldown-proxy/internal/proxy"
 	"github.com/cooldownp/cooldown-proxy/internal/ratelimit"
 	"github.com/cooldownp/cooldown-proxy/internal/router"
@@ -37,11 +38,25 @@ func main() {
 
 	// Create handlers
 	anthropicHandler := handler.NewAnthropicHandler(cfg)
-	openaiHandler := proxy.NewHandler(rateLimiter) // existing OpenAI-compatible handler
 
-	// Create router with default routes
-	routes := make(map[string]*url.URL)
-	mainRouter := router.New(routes, rateLimiter)
+	// Create base proxy handler for OpenAI compatibility
+	baseProxyHandler := proxy.NewHandler(rateLimiter)
+
+	// Wrap with model routing middleware for intelligent routing
+	var mainRouter http.Handler
+	if cfg.ModelRouting != nil && cfg.ModelRouting.Enabled {
+		mainRouter = modelrouting.NewModelRoutingMiddleware(cfg.ModelRouting, baseProxyHandler)
+	} else {
+		// Fallback to simple router with default routes
+		routes := make(map[string]*url.URL)
+		// Add default route to Cerebras if configured
+		if cfg.ModelRouting != nil && cfg.ModelRouting.DefaultTarget != "" {
+			if defaultURL, err := url.Parse(cfg.ModelRouting.DefaultTarget); err == nil {
+				routes["default"] = defaultURL
+			}
+		}
+		mainRouter = router.New(routes, rateLimiter)
+	}
 
 	// Setup routes
 	mux := http.NewServeMux()
@@ -53,18 +68,22 @@ func main() {
 	}
 	mux.Handle(anthropicPath+"/", http.StripPrefix(anthropicPath, anthropicHandler))
 
-	// OpenAI-compatible endpoint
+	// OpenAI-compatible endpoint (uses model routing)
 	openaiPath := cfg.Server.OpenAIEndpoint
 	if openaiPath == "" {
 		openaiPath = "/openai"
 	}
-	mux.Handle(openaiPath+"/", http.StripPrefix(openaiPath, openaiHandler))
+	mux.Handle(openaiPath+"/", http.StripPrefix(openaiPath, baseProxyHandler))
 
 	// Default proxy routes (existing behavior)
 	mux.Handle("/", mainRouter)
 
 	// Create server
-	addr := fmt.Sprintf("%s:%d", cfg.Server.BindAddress, cfg.Server.Port)
+	bindAddress := cfg.Server.BindAddress
+	if bindAddress == "" {
+		bindAddress = cfg.Server.Host
+	}
+	addr := fmt.Sprintf("%s:%d", bindAddress, cfg.Server.Port)
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      mux,
