@@ -3,62 +3,62 @@ package config
 import "time"
 
 type EnvironmentModels struct {
-	Haiku   string `yaml:"haiku"`
-	Sonnet  string `yaml:"sonnet"`
-	Opus    string `yaml:"opus"`
+	Haiku  string `yaml:"haiku"`
+	Sonnet string `yaml:"sonnet"`
+	Opus   string `yaml:"opus"`
 }
 
 type ProviderConfig struct {
-	Name         string                    `yaml:"name"`
-	Endpoint     string                    `yaml:"endpoint"`
-	Models       []string                  `yaml:"models"`
+	Name          string                   `yaml:"name"`
+	Endpoint      string                   `yaml:"endpoint"`
+	Models        []string                 `yaml:"models"`
 	LoadBalancing *LoadBalancingConfig     `yaml:"load_balancing,omitempty"`
-	APIKey       string                    `yaml:"api_key,omitempty"`
-	RateLimiting *ProviderRateLimitConfig  `yaml:"rate_limiting,omitempty"`
+	APIKey        string                   `yaml:"api_key,omitempty"`
+	RateLimiting  *ProviderRateLimitConfig `yaml:"rate_limiting,omitempty"`
 }
 
 type LoadBalancingConfig struct {
-	Strategy string          `yaml:"strategy"` // round_robin, least_used, weighted_random
-	APIKeys  []APIKeyConfig  `yaml:"api_keys"`
+	Strategy string         `yaml:"strategy"` // round_robin, least_used, weighted_random
+	APIKeys  []APIKeyConfig `yaml:"api_keys"`
 }
 
 type APIKeyConfig struct {
-	Key                 string `yaml:"key"`
-	Weight              int    `yaml:"weight"`
-	MaxRequestsPerMinute int   `yaml:"max_requests_per_minute"`
+	Key                  string `yaml:"key"`
+	Weight               int    `yaml:"weight"`
+	MaxRequestsPerMinute int    `yaml:"max_requests_per_minute"`
 }
 
 type ProviderRateLimitConfig struct {
-	Type            string  `yaml:"type"` // per_key_cerebras_headers, fixed_rpm, tokens_per_minute
-	SafetyMargin    float64 `yaml:"safety_margin,omitempty"`
-	BackoffThreshold int    `yaml:"backoff_threshold,omitempty"`
-	RequestsPerMinute int   `yaml:"requests_per_minute,omitempty"`
-	TokensPerMinute  int    `yaml:"tokens_per_minute,omitempty"`
+	Type              string  `yaml:"type"` // per_key_cerebras_headers, fixed_rpm, tokens_per_minute
+	SafetyMargin      float64 `yaml:"safety_margin,omitempty"`
+	BackoffThreshold  int     `yaml:"backoff_threshold,omitempty"`
+	RequestsPerMinute int     `yaml:"requests_per_minute,omitempty"`
+	TokensPerMinute   int     `yaml:"tokens_per_minute,omitempty"`
 }
 
 type ReasoningConfig struct {
-	Enabled       bool     `yaml:"enabled"`
-	Models        []string `yaml:"models"`
-	PromptTemplate string  `yaml:"prompt_template"`
+	Enabled        bool     `yaml:"enabled"`
+	Models         []string `yaml:"models"`
+	PromptTemplate string   `yaml:"prompt_template"`
 }
 
 type MonitoringConfig struct {
-	MetricsEnabled   bool   `yaml:"metrics_enabled"`
-	HealthEndpoint   string `yaml:"health_endpoint"`
+	MetricsEnabled     bool   `yaml:"metrics_enabled"`
+	HealthEndpoint     string `yaml:"health_endpoint"`
 	PrometheusEndpoint string `yaml:"prometheus_endpoint"`
-	LogLevel         string `yaml:"log_level"`
+	LogLevel           string `yaml:"log_level"`
 }
 
 type Config struct {
-	Server           ServerConfig            `yaml:"server"`
-	EnvironmentModels EnvironmentModels      `yaml:"environment_models"`
-	Providers        []ProviderConfig        `yaml:"providers"`
-	ReasoningConfig  ReasoningConfig         `yaml:"reasoning_injection"`
-	RateLimits       []RateLimitRule         `yaml:"rate_limits"`
-	DefaultRateLimit *RateLimitRule          `yaml:"default_rate_limit"`
-	CerebrasLimits   CerebrasLimits          `yaml:"cerebras_limits"`
-	ModelRouting     *ModelRoutingConfig     `yaml:"model_routing"`
-	Monitoring       MonitoringConfig        `yaml:"monitoring,omitempty"`
+	Server            ServerConfig        `yaml:"server"`
+	EnvironmentModels EnvironmentModels   `yaml:"environment_models"`
+	Providers         []ProviderConfig    `yaml:"providers"`
+	ReasoningConfig   ReasoningConfig     `yaml:"reasoning_injection"`
+	RateLimits        []RateLimitRule     `yaml:"rate_limits"`
+	DefaultRateLimit  *RateLimitRule      `yaml:"default_rate_limit"`
+	CerebrasLimits    CerebrasLimits      `yaml:"cerebras_limits"`
+	ModelRouting      *ModelRoutingConfig `yaml:"model_routing"`
+	Monitoring        MonitoringConfig    `yaml:"monitoring,omitempty"`
 }
 
 type ServerConfig struct {

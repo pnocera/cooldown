@@ -12,30 +12,30 @@ import (
 )
 
 type CerebrasProvider struct {
-	config       *config.ProviderConfig
-	currentKey   int
-	keyStats     map[string]*KeyStats
-	mu           sync.Mutex
-	httpClient   *http.Client
+	config     *config.ProviderConfig
+	currentKey int
+	keyStats   map[string]*KeyStats
+	mu         sync.Mutex
+	httpClient *http.Client
 }
 
 type KeyStats struct {
-	Key                 string
-	LastReset           time.Time
-	RequestsUsed        int
-	TokensUsed         int64
-	LimitRequestsDay   int
-	LimitTokensMinute  int
-	RemainingRequests  int
-	RemainingTokens    int
+	Key               string
+	LastReset         time.Time
+	RequestsUsed      int
+	TokensUsed        int64
+	LimitRequestsDay  int
+	LimitTokensMinute int
+	RemainingRequests int
+	RemainingTokens   int
 }
 
 type CerebrasRequest struct {
-	Model    string                 `json:"model"`
-	Messages []CerebrasMessage      `json:"messages"`
-	MaxTokens int                   `json:"max_tokens"`
-	Stream   bool                   `json:"stream"`
-	Tools    []CerebrasTool        `json:"tools,omitempty"`
+	Model     string            `json:"model"`
+	Messages  []CerebrasMessage `json:"messages"`
+	MaxTokens int               `json:"max_tokens"`
+	Stream    bool              `json:"stream"`
+	Tools     []CerebrasTool    `json:"tools,omitempty"`
 }
 
 type CerebrasMessage struct {
@@ -62,7 +62,7 @@ func NewCerebrasProvider(config *config.ProviderConfig) *CerebrasProvider {
 		provider.keyStats[keyConfig.Key] = &KeyStats{
 			Key:               keyConfig.Key,
 			LastReset:         time.Now(),
-			LimitRequestsDay:  1000, // default, will be updated from headers
+			LimitRequestsDay:  1000,  // default, will be updated from headers
 			LimitTokensMinute: 10000, // default, will be updated from headers
 		}
 	}

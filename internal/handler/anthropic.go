@@ -14,11 +14,11 @@ import (
 )
 
 type AnthropicHandler struct {
-	config         *config.Config
-	router         *Router
-	modelRouter    *model.ModelRouter
+	config          *config.Config
+	router          *Router
+	modelRouter     *model.ModelRouter
 	providerManager *provider.ProviderManager
-	reasonInjector *reasoning.ReasoningInjector
+	reasonInjector  *reasoning.ReasoningInjector
 }
 
 type Router struct {
@@ -27,11 +27,11 @@ type Router struct {
 }
 
 type AnthropicRequest struct {
-	Model     string                    `json:"model"`
-	MaxTokens int                       `json:"max_tokens"`
-	Messages  []AnthropicMessage        `json:"messages"`
-	Tools     []AnthropicTool          `json:"tools,omitempty"`
-	Stream    bool                      `json:"stream,omitempty"`
+	Model     string             `json:"model"`
+	MaxTokens int                `json:"max_tokens"`
+	Messages  []AnthropicMessage `json:"messages"`
+	Tools     []AnthropicTool    `json:"tools,omitempty"`
+	Stream    bool               `json:"stream,omitempty"`
 }
 
 type AnthropicMessage struct {
@@ -46,19 +46,18 @@ type AnthropicTool struct {
 }
 
 type AnthropicResponse struct {
-	ID      string            `json:"id"`
-	Type    string            `json:"type"`
-	Role    string            `json:"role"`
-	Content []AnthropicContent `json:"content"`
-	Model   string            `json:"model"`
-	StopReason string         `json:"stop_reason,omitempty"`
+	ID         string             `json:"id"`
+	Type       string             `json:"type"`
+	Role       string             `json:"role"`
+	Content    []AnthropicContent `json:"content"`
+	Model      string             `json:"model"`
+	StopReason string             `json:"stop_reason,omitempty"`
 }
 
 type AnthropicContent struct {
 	Type string `json:"type"`
 	Text string `json:"text,omitempty"`
 }
-
 
 func NewRouter(config *config.Config) *Router {
 	return &Router{

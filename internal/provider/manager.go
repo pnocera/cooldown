@@ -15,16 +15,16 @@ type Provider interface {
 }
 
 type Response struct {
-	Content    string                 `json:"content"`
-	Model      string                 `json:"model"`
-	Usage      map[string]interface{} `json:"usage"`
-	Headers    map[string]string      `json:"headers"`
+	Content string                 `json:"content"`
+	Model   string                 `json:"model"`
+	Usage   map[string]interface{} `json:"usage"`
+	Headers map[string]string      `json:"headers"`
 }
 
 type ProviderManager struct {
-	config   *config.Config
+	config    *config.Config
 	providers map[string]Provider
-	mu       sync.RWMutex
+	mu        sync.RWMutex
 }
 
 func NewProviderManager(config *config.Config) *ProviderManager {

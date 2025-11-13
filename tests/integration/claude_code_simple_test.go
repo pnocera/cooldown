@@ -12,31 +12,31 @@ func TestConfigurationLoading(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to load configuration: %v", err)
 		}
-		
+
 		// Verify server configuration
 		if config.Server.AnthropicEndpoint != "/anthropic" {
 			t.Errorf("Expected AnthropicEndpoint '/anthropic', got %s", config.Server.AnthropicEndpoint)
 		}
-		
+
 		if config.Server.OpenAIEndpoint != "/openai" {
 			t.Errorf("Expected OpenAIEndpoint '/openai', got %s", config.Server.OpenAIEndpoint)
 		}
-		
+
 		// Verify environment models
 		if config.EnvironmentModels.Sonnet == "" {
 			t.Error("Expected Sonnet model to be configured")
 		}
-		
+
 		// Verify providers
 		if len(config.Providers) == 0 {
 			t.Error("Expected at least one provider to be configured")
 		}
-		
+
 		// Verify reasoning config
 		if !config.ReasoningConfig.Enabled {
 			t.Error("Expected reasoning injection to be enabled")
 		}
-		
+
 		t.Logf("Successfully loaded configuration with %d providers", len(config.Providers))
 	})
 }
@@ -49,7 +49,7 @@ func TestModelMapping(t *testing.T) {
 			Opus:   "glm-4.6",
 		},
 	}
-	
+
 	testCases := []struct {
 		claudeModel      string
 		expectedProvider string
@@ -59,7 +59,7 @@ func TestModelMapping(t *testing.T) {
 		{"claude-3-opus-20240229", "glm-4.6"},
 		{"unknown-model", "glm-4.6"}, // Should default to sonnet
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.claudeModel, func(t *testing.T) {
 			var mappedModel string
@@ -73,7 +73,7 @@ func TestModelMapping(t *testing.T) {
 			default:
 				mappedModel = config.EnvironmentModels.Sonnet
 			}
-			
+
 			if mappedModel != tc.expectedProvider {
 				t.Errorf("Expected %s, got %s", tc.expectedProvider, mappedModel)
 			}
@@ -89,17 +89,17 @@ environment_models:
   haiku: "${TEST_HAIKU_MODEL:glm-4.5-air}"
   sonnet: "glm-4.6"
 `
-		
+
 		config, err := config.LoadFromYAMLString(yamlContent)
 		if err != nil {
 			t.Fatalf("Failed to load config from string: %v", err)
 		}
-		
+
 		// Should have the default value since env var is not set
 		if config.EnvironmentModels.Haiku != "glm-4.5-air" {
 			t.Errorf("Expected 'glm-4.5-air', got %s", config.EnvironmentModels.Haiku)
 		}
-		
+
 		if config.EnvironmentModels.Sonnet != "glm-4.6" {
 			t.Errorf("Expected 'glm-4.6', got %s", config.EnvironmentModels.Sonnet)
 		}
@@ -108,11 +108,11 @@ environment_models:
 
 // Helper function from the plan
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || 
-		(len(s) > len(substr) && 
-			(s[:len(substr)+1] == substr+"-" || 
-			 s[len(s)-len(substr)-1:] == "-"+substr || 
-			 findSubstring(s, substr))))
+	return len(s) >= len(substr) && (s == substr ||
+		(len(s) > len(substr) &&
+			(s[:len(substr)+1] == substr+"-" ||
+				s[len(s)-len(substr)-1:] == "-"+substr ||
+				findSubstring(s, substr))))
 }
 
 func findSubstring(s, substr string) bool {

@@ -10,8 +10,8 @@ import (
 func TestReasoningInjectorInjectsForGLMModels(t *testing.T) {
 	config := &config.Config{
 		ReasoningConfig: config.ReasoningConfig{
-			Enabled: true,
-			Models:  []string{"glm-4.6", "glm-4.5-air"},
+			Enabled:        true,
+			Models:         []string{"glm-4.6", "glm-4.5-air"},
 			PromptTemplate: "You are an expert reasoning model. Always think step by step.",
 		},
 	}

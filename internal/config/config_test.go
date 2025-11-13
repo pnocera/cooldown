@@ -86,14 +86,14 @@ func TestAnthropicEndpointConfiguration(t *testing.T) {
 		Server: ServerConfig{
 			AnthropicEndpoint: "/anthropic",
 			OpenAIEndpoint:    "/openai",
-			Port:             5730,
-			BindAddress:      "127.0.0.1",
-			APIKeyRequired:   false,
+			Port:              5730,
+			BindAddress:       "127.0.0.1",
+			APIKeyRequired:    false,
 		},
 		EnvironmentModels: EnvironmentModels{
-			Haiku:   "glm-4.5-air",
-			Sonnet:  "glm-4.6",
-			Opus:    "glm-4.6",
+			Haiku:  "glm-4.5-air",
+			Sonnet: "glm-4.6",
+			Opus:   "glm-4.6",
 		},
 	}
 

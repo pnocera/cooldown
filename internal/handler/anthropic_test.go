@@ -66,8 +66,8 @@ func TestAnthropicHandlerEndToEndFlow(t *testing.T) {
 			},
 		},
 		ReasoningConfig: config.ReasoningConfig{
-			Enabled:       true,
-			Models:        []string{"glm-4.6"},
+			Enabled:        true,
+			Models:         []string{"glm-4.6"},
 			PromptTemplate: "You are an expert reasoning model.",
 		},
 	}

@@ -29,6 +29,6 @@ func (p *ZhipuProvider) MakeRequest(model string, messages []interface{}, option
 	// TODO: Implement Zhipu API integration
 	return &Response{
 		Content: "Zhipu response placeholder",
-		Model:  model,
+		Model:   model,
 	}, nil
 }
