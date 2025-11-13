@@ -1,4 +1,4 @@
-.PHONY: help build build-all build-windows build-linux build-darwin build-loadtest test fmt vet check dev quick-start version clean
+.PHONY: help build build-all build-windows build-linux build-darwin build-loadtest test fmt vet check dev quick-start version clean dev-claude-code test-claude-code integration-test build-all-claude-code
 
 # Detect OS and set appropriate binary extension
 # Use Go's environment to check current OS
@@ -27,6 +27,10 @@ help:
 	@echo "  dev            - Start development server"
 	@echo "  quick-start    - Quick start for development"
 	@echo "  loadtest       - Run load tests (requires running server)"
+	@echo "  dev-claude-code - Start development server with Claude Code config"
+	@echo "  test-claude-code - Run Claude Code specific tests"
+	@echo "  integration-test - Run integration tests with server"
+	@echo "  build-all-claude-code - Build all platforms with Claude Code config"
 	@echo "  version        - Show version info"
 	@echo "  clean          - Clean build artifacts"
 
@@ -100,6 +104,35 @@ dev:
 quick-start: dev
 	@echo "Quick start completed!"
 	@echo "Proxy is running at http://localhost:8080"
+
+# Claude Code specific targets
+dev-claude-code:
+	@echo "Starting development server with Claude Code configuration..."
+	@if [ ! -f config.yaml ]; then \
+		cp config.yaml.example-claude-code config.yaml; \
+		echo "Created config.yaml from Claude Code example"; \
+	fi
+	go run ./cmd/proxy -config config.yaml
+
+test-claude-code:
+	@echo "Running Claude Code specific tests..."
+	go test ./internal/... -v
+	go test ./tests/integration/... -v
+
+integration-test: build
+	@echo "Running integration tests with server..."
+	./$(BINARY_NAME) -config config.yaml.example-claude-code &
+	@sleep 2
+	go test ./tests/integration/... -v
+	@pkill $(BINARY_NAME) || true
+
+build-all-claude-code:
+	@echo "Building all platforms with Claude Code configuration..."
+	GOOS=linux GOARCH=amd64 go build -o dist/cooldown-proxy-linux-amd64 ./cmd/proxy
+	GOOS=windows GOARCH=amd64 go build -o dist/cooldown-proxy-windows-amd64.exe ./cmd/proxy
+	GOOS=darwin GOARCH=amd64 go build -o dist/cooldown-proxy-darwin-amd64 ./cmd/proxy
+	GOOS=darwin GOARCH=arm64 go build -o dist/cooldown-proxy-darwin-arm64 ./cmd/proxy
+	@echo "Built all platforms for Claude Code in dist/"
 
 version:
 	@echo "Cooldown Proxy"
